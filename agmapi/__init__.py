@@ -13,9 +13,8 @@ app.config['MONGODB_SETTINGS'] = {
 
 db = init_db(app)
 
-app.route('/')
 
-
+@app.route('/')
 def index():
     return render_template('index.html')
 
