@@ -1,0 +1,23 @@
+Problem Statement
+=================
+
+You are building a price discovery interface where user can find prices of various crops, compare prices of two crops and apply filters on search queries.
+
+You are required to do the following - 
+
+1. Parse the 7 HTML files provides in the "htmls" directory. Each file contains prices for multiple crops across multiple mandis in India. This also shows on which date the price was captured. The price per quintal is given in the "Modal Price" column. Another column required is "Arrivals" which shows the volume of crops that was brought in that mandi on that particular day.
+
+2. Store the extracted data in a data store of your choice. Clean the data as you see fit.
+
+3. Build a set of backend APIs which returns the price on a particular day or on a given range of days. Mandi name and crop name will also be passed as parameters. Use your own choice of API framework. Nodejs based framework is preferred.
+
+4. Build an HTML based interface in framework of your choice using the backend APIs where user can do the following - 
+	a. Selects crop name and mandi name from a drop down and the interface displays the price in a table and also in a timeseries graph.
+	b. Selects crop name, mandi name, a specific date or a date range and the interface displays the price in a table and also in a timeseries graph.
+	c. Selects two crops from a same mandi (optional with date filters) and the interface displays the comparison of the prices in a table and also in a timeseries graph.
+
+Bonus - 
+
+1. Option to compare arrivals, max price, min price individually or as a combination.
+2. Provide insights when user selects a crop - lowest price with the mandi name, highest price with the mandi name.
+3. Provide insights when user selects a mandi - lowest priced crop with price, highest priced crop with price (use modal price for this)
