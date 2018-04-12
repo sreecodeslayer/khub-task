@@ -6,7 +6,6 @@ def init_db(app):
     global db
 
     db = MongoEngine(app)
-    return db
 
 
 def get_db():
