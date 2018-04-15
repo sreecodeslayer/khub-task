@@ -20,7 +20,7 @@ class Commidities(Document):
     name = StringField(unique=True)
 
     meta = {
-        'index': ['name', 'type']
+        'indexes': ['name', 'type']
     }
 
 
@@ -35,7 +35,7 @@ class Stocks(Document):
     arrivals = StringField()
 
     meta = {
-        'index': ['state', 'date', 'modal_price', 'min_price', 'max_price']
+        'indexes': ['state', 'date', 'modal_price', 'min_price', 'max_price']
     }
 
 

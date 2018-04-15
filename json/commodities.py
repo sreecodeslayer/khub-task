@@ -18,7 +18,7 @@ class Commidities(Document):
     name = StringField(unique=True)
 
     meta = {
-        'index': ['name', 'type']
+        'indexes': ['name', 'type']
     }
 
 
