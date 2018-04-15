@@ -47,7 +47,7 @@ class StocksResource(Resource):
                     )
 
                 stocks = Stocks.objects(
-                    date=date, commodity=comm, mandi__contains=mandi_name
+                    date=date, commodity=comm, mandi__icontains=mandi_name
                 )
             elif comm:
                 try:
@@ -80,7 +80,7 @@ class StocksResource(Resource):
                 stocks = Stocks.objects(
                     date__gte=frm,
                     date__lte=to,
-                    mandi__contains=mandi_name,
+                    mandi__icontains=mandi_name,
                     commodity=comm
                 )
             elif comm:
@@ -100,7 +100,7 @@ class StocksResource(Resource):
                 stocks = Stocks.objects(
                     date__gte=frm,
                     date__lte=to,
-                    mandi__contains=mandi_name,
+                    mandi__icontains=mandi_name,
                 )
             else:
                 stocks = Stocks.objects(
