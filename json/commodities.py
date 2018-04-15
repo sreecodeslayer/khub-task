@@ -4,6 +4,7 @@ from mongoengine import (
     Document,
     StringField,
     IntField,
+    ListField,
     DateTimeField,
     FloatField,
     ReferenceField
@@ -14,11 +15,11 @@ conn = connect('AGMAPI')
 
 
 class Commidities(Document):
-    type = StringField()
+    types = ListField()
     name = StringField(unique=True)
 
     meta = {
-        'indexes': ['name', 'type']
+        'indexes': ['name', 'types']
     }
 
 
@@ -29,11 +30,11 @@ comm_type = ''
 for val in data:
     try:
         if len(val) == 1:
-            comm_type = val[0]
+            comm_type = val[0].split(',')
         else:
             for comm in val:
                 try:
-                    commodity = Commidities(type=comm_type, name=comm)
+                    commodity = Commidities(types=comm_type, name=comm)
                     commodity.save()
                 except NotUniqueError:
                     print("commodity %s already feeded" % comm)
