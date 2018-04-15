@@ -58,7 +58,7 @@ class StocksResource(Resource):
                 )
 
         # Filter by mandi and crop combos if asked
-        if comm and mandi_name:
+        if comm and mandi_id:
             try:
                 comm = Commidities.objects.get(name=comm)
             except DoesNotExist:
@@ -73,7 +73,7 @@ class StocksResource(Resource):
                 )
             except DoesNotExist:
                 return make_response(
-                    jsonify(msg="No mandi in that name"), 404
+                    jsonify(msg="No mandi in that id"), 404
                 )
 
             stocks = stocks.filter(
@@ -99,7 +99,7 @@ class StocksResource(Resource):
                 )
             except DoesNotExist:
                 return make_response(
-                    jsonify(msg="No mandi in that name"), 404
+                    jsonify(msg="No mandi in that id"), 404
                 )
             stocks = stocks.filter(
                 mandi=mandi
