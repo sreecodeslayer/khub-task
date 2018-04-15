@@ -27,9 +27,13 @@ def index():
 
 from .web import (
     StocksResource,
-    CommodityResource
+    CommodityResource,
+    StatesResource,
+    MandisResource
 )
 api = Api(app)
 
 api.add_resource(StocksResource, '/api/stocks')
 api.add_resource(CommodityResource, '/api/commodities')
+api.add_resource(StatesResource, '/api/states')
+api.add_resource(MandisResource, '/api/mandis')
