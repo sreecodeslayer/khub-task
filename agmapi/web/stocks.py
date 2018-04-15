@@ -11,6 +11,9 @@ from agmapi.db.models import (
 )
 from agmapi.db.schemas import StocksSchema
 from datetime import datetime
+from mongoengine.errors import DoesNotExist
+
+from agmapi.utils import logger
 
 schema = StocksSchema()
 
@@ -20,6 +23,9 @@ class StocksResource(Resource):
     def get(self):
         # Accept and parse params
         params = request.args
+
+        logger.debug(params)
+
         date = params.get('date')
         frm = params.get('from')
         to = params.get('to')
@@ -29,85 +35,104 @@ class StocksResource(Resource):
         per_page = int(params.get('perPage', 10))
         per_page = 20 if per_page > 20 else per_page
 
-        if not mandi_name:
-            return make_response(
-                jsonify(msg='`mandi` field is required'), 400
-            )
-        if not comm:
-            return make_response(
-                jsonify(msg='`commodity` field is required,'
-                        ' and is an ObjectID'), 400
-            )
+        # On a specific date
+        if date:
+            date = datetime.strptime(date, '%d/%m/%Y')
+            if comm and mandi_name:
+                try:
+                    comm = Commidities.objects.get(name=comm)
+                except DoesNotExist:
+                    return make_response(
+                        jsonify(msg="No commodity in that name"), 404
+                    )
 
-        try:
-            # On a specific date
-            if date:
-                date = datetime.strptime(date, '%d/%m/%Y')
-                if comm and mandi_name:
-                    try:
-                        comm = Commidities.objects.get(name=comm)
-                    except DoesNotExist:
-                        return make_response(
-                            jsonify(msg="No commodity in that name"), 404
-                        )
-                    stocks = Stocks.objects(
-                        date=date, commodity=comm, mandi=mandi_name
-                    ).paginate(
-                        page=page, per_page=per_page
+                stocks = Stocks.objects(
+                    date=date, commodity=comm, mandi__contains=mandi_name
+                )
+            elif comm:
+                try:
+                    comm = Commidities.objects.get(name=comm)
+                except DoesNotExist:
+                    return make_response(
+                        jsonify(msg="No commodity in that name"), 404
                     )
-                elif comm:
-                    try:
-                        comm = Commidities.objects.get(name=comm)
-                    except DoesNotExist:
-                        return make_response(
-                            jsonify(msg="No commodity in that name"), 404
-                        )
-                    stocks = Stocks.objects(
-                        date=date,
-                        commodity=comm
-                    ).paginate(
-                        page=page, per_page=per_page
-                    )
-                elif mandi_name:
-                    stocks = Stocks.objects(
-                        date=date, mandi=mandi_name
-                    ).paginate(
-                        page=page, per_page=per_page
-                    )
-                else:
-                    stocks = Stocks.objects(
-                        date=date
-                    ).paginate(
-                        page=page, per_page=per_page
-                    )
-            # Inside a range of date
-            elif frm:
-                frm = datetime.strptime(frm, '%d/%m/%Y')
 
-                to = to if datetime.strptime(
-                    to, '%d/%m/%Y') else datetime.utcnow()
+                stocks = Stocks.objects(
+                    date=date,
+                    commodity=comm
+                )
+            elif mandi_name:
+                stocks = Stocks.objects(
+                    date=date, mandi=mandi_name
+                )
+            else:
+                stocks = Stocks.objects(
+                    date=date
+                )
+        # Inside a range of date , not implemented yet
+        elif frm:
+            frm = datetime.strptime(frm, '%d/%m/%Y')
 
-                stocks = Stocks.objects(date=date, mandi=mandi_name
-                                        ).paginate(
-                    page=page, per_page=per_page
+            to = datetime.strptime(
+                to, '%d/%m/%Y') if to else datetime.utcnow()
+            if comm and mandi_name:
+                comm = Commidities.objects.get(name=comm)
+                stocks = Stocks.objects(
+                    date__gte=frm,
+                    date__lte=to,
+                    mandi__contains=mandi_name,
+                    commodity=comm
+                )
+            elif comm:
+                try:
+                    comm = Commidities.objects.get(name=comm)
+                except DoesNotExist:
+                    return make_response(
+                        jsonify(msg="No commodity in that name"), 404
+                    )
+
+                stocks = Stocks.objects(
+                    date__gte=frm,
+                    date__lte=to,
+                    commodity=comm
+                )
+            elif mandi_name:
+                stocks = Stocks.objects(
+                    date__gte=frm,
+                    date__lte=to,
+                    mandi__contains=mandi_name,
+                )
+            else:
+                stocks = Stocks.objects(
+                    date=date
                 )
 
-            stocks = Stocks.objects().paginate(
+        if not stocks:
+            stocks = Stocks.objects()
+
+        if int(stocks.count()/per_page) >= page:
+            # Flask mongoengine throws a general 404 on over pagination
+            # This gives no flexibility on pagination
+            stocks = stocks.paginate(
                 page=page, per_page=per_page
             )
-
             total = stocks.total
-            print(total)
             page = stocks.page
             per_page = stocks.per_page
             total_pages = total/per_page
-            stocks = schema.dump(stocks.items, many=True)
-            return jsonify(
-                stocks=stocks.data,
-                page=page,
-                per_page=per_page,
-                total=total,
-                total_pages=int(total_pages)
-            )
-        except Exception as e:
-            raise e
+            stocks = stocks.items
+        else:
+
+            total = stocks.count()
+            page = 1
+            per_page = per_page
+            total_pages = total/per_page
+
+        stocks = schema.dump(stocks, many=True)
+        return jsonify(
+            stocks=stocks.data,
+            page=page,
+            per_page=per_page,
+            total=total,
+            total_pages=int(total_pages)
+        )
