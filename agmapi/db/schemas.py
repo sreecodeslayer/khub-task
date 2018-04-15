@@ -28,7 +28,7 @@ from .models import (
 class CommiditiesSchema(Schema):
     id = ObjectID(dump_only=True)
     name = fields.String()
-    typ = fields.String()
+    types = fields.List(fields.String)
 
 
 class StocksSchema(Schema):

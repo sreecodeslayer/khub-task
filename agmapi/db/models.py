@@ -5,11 +5,11 @@ db = get_db()
 
 
 class Commidities(db.Document):
-    type = db.StringField()
+    types = db.ListField()
     name = db.StringField(unique=True)
 
     meta = {
-        'indexes': ['name', 'type']
+        'indexes': ['name', 'types']
     }
 
 
