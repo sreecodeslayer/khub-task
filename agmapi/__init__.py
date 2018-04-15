@@ -19,12 +19,17 @@ logger = get_logger()
 
 logger.info('Server ready!')
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 
-from .web import CropsResource
+from .web import (
+    CropsResource,
+    CommodityResource
+)
 api = Api(app)
 
 api.add_resource(CropsResource, '/api/crops')
+api.add_resource(CommodityResource, '/api/commodities')

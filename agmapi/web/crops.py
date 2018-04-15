@@ -5,11 +5,11 @@ from flask import (
     make_response
 )
 
-from agmapi.db.models import Crops
+from agmapi.db.models import Stocks
 from datetime import datetime
 
 
-class CropsResource(Resource):
+class StocksResource(Resource):
 
     def get(self):
         # Accept and parse params
@@ -28,17 +28,29 @@ class CropsResource(Resource):
             if date:
                 date = datetime.strptime(date, '%d/%m/%Y')
                 if crop_name:
-                    crops = Crops.objects(date=date, name=crop_name).paginate(
-                        page=page, per_page=per_page)
+                    stocks = Stocks.objects(
+                        date=date, name=crop_name
+                    ).paginate(
+                        page=page, per_page=per_page
+                    )
                 elif mandi_name:
-                    crops = Crops.objects(date=date, name=crop_name, mandi=mandi_name).paginate(
-                        page=page, per_page=per_page)
+                    stocks = Stocks.objects(
+                        date=date, name=crop_name, mandi=mandi_name
+                    ).paginate(
+                        page=page, per_page=per_page
+                    )
                 elif crop_name and mandi_name:
-                    crops = Crops.objects(date=date, mandi=mandi_name).paginate(
-                        page=page, per_page=per_page)
+                    stocks = Stocks.objects(
+                        date=date, mandi=mandi_name
+                    ).paginate(
+                        page=page, per_page=per_page
+                    )
                 else:
-                    crops = Crops.objects(date=date).paginate(
-                        page=page, per_page=per_page)
+                    stocks = Stocks.objects(
+                        date=date
+                    ).paginate(
+                        page=page, per_page=per_page
+                    )
 
             elif frm:
                 frm = datetime.strptime(frm, '%d/%m/%Y')
@@ -46,11 +58,15 @@ class CropsResource(Resource):
                 to = to if datetime.strptime(
                     to, '%d/%m/%Y') else datetime.utcnow()
 
-                crops = Crops.objects(date=date, mandi=mandi_name).paginate(
-                    page=page, per_page=per_page)
+                stocks = Stocks.objects(date=date, mandi=mandi_name
+                                        ).paginate(
+                    page=page, per_page=per_page
+                )
 
-            crops = Crops.objects(name=crop_name, mandi=mandi_name).paginate(
-                page=page, per_page=per_page)
+            stocks = Stocks.objects(name=crop_name, mandi=mandi_name
+                                    ).paginate(
+                page=page, per_page=per_page
+            )
         except Exception as e:
             raise e
 
