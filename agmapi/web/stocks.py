@@ -20,7 +20,6 @@ class StocksResource(Resource):
     def get(self):
         # Accept and parse params
         params = request.args
-
         date = params.get('date')
         frm = params.get('from')
         to = params.get('to')
@@ -30,28 +29,21 @@ class StocksResource(Resource):
         per_page = int(params.get('perPage', 10))
         per_page = 20 if per_page > 20 else per_page
 
+        if not mandi_name:
+            return make_response(
+                jsonify(msg='`mandi` field is required'), 400
+            )
+        if not comm:
+            return make_response(
+                jsonify(msg='`commodity` field is required,'
+                        ' and is an ObjectID'), 400
+            )
+
         try:
+            # On a specific date
             if date:
                 date = datetime.strptime(date, '%d/%m/%Y')
-                if comm:
-                    try:
-                        comm = Commidities.objects.get(name=comm)
-                    except DoesNotExist:
-                        return make_response(
-                            jsonify(msg="No commodity in that name"), 404
-                        )
-                    stocks = Stocks.objects(
-                        date=date, commodity=comm
-                    ).paginate(
-                        page=page, per_page=per_page
-                    )
-                elif mandi_name:
-                    stocks = Stocks.objects(
-                        date=date, mandi=mandi_name
-                    ).paginate(
-                        page=page, per_page=per_page
-                    )
-                elif comm and mandi_name:
+                if comm and mandi_name:
                     try:
                         comm = Commidities.objects.get(name=comm)
                     except DoesNotExist:
@@ -63,26 +55,32 @@ class StocksResource(Resource):
                     ).paginate(
                         page=page, per_page=per_page
                     )
+                elif comm:
+                    try:
+                        comm = Commidities.objects.get(name=comm)
+                    except DoesNotExist:
+                        return make_response(
+                            jsonify(msg="No commodity in that name"), 404
+                        )
+                    stocks = Stocks.objects(
+                        date=date,
+                        commodity=comm
+                    ).paginate(
+                        page=page, per_page=per_page
+                    )
+                elif mandi_name:
+                    stocks = Stocks.objects(
+                        date=date, mandi=mandi_name
+                    ).paginate(
+                        page=page, per_page=per_page
+                    )
                 else:
                     stocks = Stocks.objects(
                         date=date
                     ).paginate(
                         page=page, per_page=per_page
                     )
-
-                total = stocks.total
-                page = stocks.page
-                per_page = stocks.per_page
-                total_pages = total/per_page
-                stocks = schema.dump(stocks.items, many=True)
-                return jsonify(
-                    stocks=stocks.data,
-                    page=page,
-                    per_page=per_page,
-                    total=total,
-                    total_pages=int(total_pages)
-                )
-
+            # Inside a range of date
             elif frm:
                 frm = datetime.strptime(frm, '%d/%m/%Y')
 
@@ -99,6 +97,7 @@ class StocksResource(Resource):
             )
 
             total = stocks.total
+            print(total)
             page = stocks.page
             per_page = stocks.per_page
             total_pages = total/per_page
