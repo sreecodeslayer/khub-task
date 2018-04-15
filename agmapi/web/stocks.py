@@ -29,8 +29,6 @@ class StocksResource(Resource):
         # Accept and parse params
         params = request.args
 
-        logger.debug(params)
-
         date = params.get('date')
         frm = params.get('from')
         to = params.get('to')
@@ -45,6 +43,7 @@ class StocksResource(Resource):
 
         # Filter by state if asked
         if state_id:
+            logger.debug("Filtering by states")
             try:
                 state = States.objects.get(id=state_id)
                 stocks = stocks.filter(state=state)
@@ -59,6 +58,7 @@ class StocksResource(Resource):
 
         # Filter by mandi and crop combos if asked
         if comm and mandi_id:
+            logger.debug("Filtering by commodity and mandi together")
             try:
                 comm = Commidities.objects.get(name=comm)
             except DoesNotExist:
@@ -80,6 +80,7 @@ class StocksResource(Resource):
                 commodity=comm, mandi=mandi
             )
         elif comm:
+            logger.debug("Filtering by commodity")
             try:
                 comm = Commidities.objects.get(name=comm)
             except DoesNotExist:
@@ -91,6 +92,7 @@ class StocksResource(Resource):
                 commodity=comm
             )
         elif mandi_id:
+            logger.debug("Filtering by mandi")
             try:
                 mandi = Mandis.objects.get(id=mandi_id)
             except ValidationError:
@@ -108,9 +110,11 @@ class StocksResource(Resource):
         # Filter by date or range now if asked
         # Date have precedence over range
         if date:
+            logger.debug("Filtering by specific date")
             date = datetime.strptime(date, '%d/%m/%Y')
             stocks = stocks.filter(date=date)
         elif frm:
+            logger.debug("Filtering by date range")
             frm = datetime.strptime(frm, '%d/%m/%Y')
 
             to = datetime.strptime(
