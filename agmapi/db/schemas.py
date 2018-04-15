@@ -21,8 +21,21 @@ Schema.TYPE_MAPPING[ObjectId] = ObjectID
 
 from .models import (
     Commidities,
-    Stocks
+    Stocks,
+    Mandis,
+    States
 )
+
+
+class StatesSchema(Schema):
+    id = ObjectID(dump_only=True)
+    name = fields.String()
+
+
+class MandisSchema(Schema):
+    id = ObjectID(dump_only=True)
+    name = fields.String()
+    state = fields.Nested(StatesSchema, dump_only=True)
 
 
 class CommiditiesSchema(Schema):
@@ -34,8 +47,8 @@ class CommiditiesSchema(Schema):
 class StocksSchema(Schema):
     id = ObjectID(dump_only=True)
     commodity = fields.Nested(CommiditiesSchema, dump_only=True)
-    state = fields.String(dump_only=True)
-    mandi = fields.String(dump_only=True)
+    state = fields.Nested(StatesSchema, dump_only=True)
+    mandi = fields.Nested(MandisSchema, dump_only=True)
     date = fields.DateTime(dump_only=True)
     modal_price = fields.String(dump_only=True)
     min_price = fields.String(dump_only=True)

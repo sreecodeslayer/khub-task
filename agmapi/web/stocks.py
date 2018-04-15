@@ -7,11 +7,16 @@ from flask import (
 
 from agmapi.db.models import (
     Stocks,
-    Commidities
+    Commidities,
+    Mandis,
+    States
 )
 from agmapi.db.schemas import StocksSchema
 from datetime import datetime
-from mongoengine.errors import DoesNotExist
+from mongoengine.errors import (
+    DoesNotExist,
+    ValidationError
+)
 
 from agmapi.utils import logger
 
@@ -30,15 +35,29 @@ class StocksResource(Resource):
         frm = params.get('from')
         to = params.get('to')
         comm = params.get('commodity')
-        mandi_name = params.get('mandi')
-        state_name = params.get('state')
+        mandi_id = params.get('mandi', '').strip()
+        state_id = params.get('state', '').strip()
         page = int(params.get('page', 1))
         per_page = int(params.get('perPage', 10))
         per_page = 20 if per_page > 20 else per_page
 
         stocks = Stocks.objects()
 
-        # Filter by mandi and crop combos
+        # Filter by state if asked
+        if state_id:
+            try:
+                state = States.objects.get(id=state_id)
+                stocks = stocks.filter(state=state)
+            except ValidationError:
+                return make_response(
+                    jsonify(msg="Field state needs to be an ObjectId"), 404
+                )
+            except DoesNotExist:
+                return make_response(
+                    jsonify(msg="No state in that name"), 404
+                )
+
+        # Filter by mandi and crop combos if asked
         if comm and mandi_name:
             try:
                 comm = Commidities.objects.get(name=comm)
@@ -46,9 +65,19 @@ class StocksResource(Resource):
                 return make_response(
                     jsonify(msg="No commodity in that name"), 404
                 )
+            try:
+                mandi = Mandis.objects.get(id=mandi_id)
+            except ValidationError:
+                return make_response(
+                    jsonify(msg="Field mandi needs to be an ObjectId"), 404
+                )
+            except DoesNotExist:
+                return make_response(
+                    jsonify(msg="No mandi in that name"), 404
+                )
 
             stocks = stocks.filter(
-                commodity=comm, mandi__icontains=mandi_name
+                commodity=comm, mandi=mandi
             )
         elif comm:
             try:
@@ -61,12 +90,22 @@ class StocksResource(Resource):
             stocks = stocks.filter(
                 commodity=comm
             )
-        elif mandi_name:
+        elif mandi_id:
+            try:
+                mandi = Mandis.objects.get(id=mandi_id)
+            except ValidationError:
+                return make_response(
+                    jsonify(msg="Field mandi needs to be an ObjectId"), 404
+                )
+            except DoesNotExist:
+                return make_response(
+                    jsonify(msg="No mandi in that name"), 404
+                )
             stocks = stocks.filter(
-                mandi=mandi_name
+                mandi=mandi
             )
 
-        # Filter by date or range now
+        # Filter by date or range now if asked
         # Date have precedence over range
         if date:
             date = datetime.strptime(date, '%d/%m/%Y')

@@ -13,10 +13,23 @@ class Commidities(db.Document):
     }
 
 
+class States(db.Document):
+    name = db.StringField(unique=True)
+
+
+class Mandis(db.Document):
+    name = db.StringField()
+    state = db.ReferenceField(States)
+
+    meta = {
+        'indexes': ['name', 'state']
+    }
+
+
 class Stocks(db.Document):
     commodity = db.ReferenceField(Commidities)
-    state = db.StringField()
-    mandi = db.StringField()
+    state = db.ReferenceField(States)
+    mandi = db.ReferenceField(Mandis)
     date = db.DateTimeField()
     modal_price = db.StringField()
     min_price = db.StringField()
