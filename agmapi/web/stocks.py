@@ -31,84 +31,55 @@ class StocksResource(Resource):
         to = params.get('to')
         comm = params.get('commodity')
         mandi_name = params.get('mandi')
+        state_name = params.get('state')
         page = int(params.get('page', 1))
         per_page = int(params.get('perPage', 10))
         per_page = 20 if per_page > 20 else per_page
 
-        # On a specific date
+        stocks = Stocks.objects()
+
+        # Filter by mandi and crop combos
+        if comm and mandi_name:
+            try:
+                comm = Commidities.objects.get(name=comm)
+            except DoesNotExist:
+                return make_response(
+                    jsonify(msg="No commodity in that name"), 404
+                )
+
+            stocks = stocks.filter(
+                commodity=comm, mandi__icontains=mandi_name
+            )
+        elif comm:
+            try:
+                comm = Commidities.objects.get(name=comm)
+            except DoesNotExist:
+                return make_response(
+                    jsonify(msg="No commodity in that name"), 404
+                )
+
+            stocks = stocks.filter(
+                commodity=comm
+            )
+        elif mandi_name:
+            stocks = stocks.filter(
+                mandi=mandi_name
+            )
+
+        # Filter by date or range now
+        # Date have precedence over range
         if date:
             date = datetime.strptime(date, '%d/%m/%Y')
-            if comm and mandi_name:
-                try:
-                    comm = Commidities.objects.get(name=comm)
-                except DoesNotExist:
-                    return make_response(
-                        jsonify(msg="No commodity in that name"), 404
-                    )
-
-                stocks = Stocks.objects(
-                    date=date, commodity=comm, mandi__icontains=mandi_name
-                )
-            elif comm:
-                try:
-                    comm = Commidities.objects.get(name=comm)
-                except DoesNotExist:
-                    return make_response(
-                        jsonify(msg="No commodity in that name"), 404
-                    )
-
-                stocks = Stocks.objects(
-                    date=date,
-                    commodity=comm
-                )
-            elif mandi_name:
-                stocks = Stocks.objects(
-                    date=date, mandi=mandi_name
-                )
-            else:
-                stocks = Stocks.objects(
-                    date=date
-                )
-        # Inside a range of date , not implemented yet
+            stocks = stocks.filter(date=date)
         elif frm:
             frm = datetime.strptime(frm, '%d/%m/%Y')
 
             to = datetime.strptime(
                 to, '%d/%m/%Y') if to else datetime.utcnow()
-            if comm and mandi_name:
-                comm = Commidities.objects.get(name=comm)
-                stocks = Stocks.objects(
-                    date__gte=frm,
-                    date__lte=to,
-                    mandi__icontains=mandi_name,
-                    commodity=comm
-                )
-            elif comm:
-                try:
-                    comm = Commidities.objects.get(name=comm)
-                except DoesNotExist:
-                    return make_response(
-                        jsonify(msg="No commodity in that name"), 404
-                    )
-
-                stocks = Stocks.objects(
-                    date__gte=frm,
-                    date__lte=to,
-                    commodity=comm
-                )
-            elif mandi_name:
-                stocks = Stocks.objects(
-                    date__gte=frm,
-                    date__lte=to,
-                    mandi__icontains=mandi_name,
-                )
-            else:
-                stocks = Stocks.objects(
-                    date=date
-                )
-
-        if not stocks:
-            stocks = Stocks.objects()
+            stocks = stocks.filter(
+                date__gte=frm,
+                date__lte=to
+            )
 
         if int(stocks.count()/per_page) >= page:
             # Flask mongoengine throws a general 404 on over pagination
