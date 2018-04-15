@@ -10,8 +10,20 @@ from mongoengine import (
     ReferenceField
 )
 from mongoengine.errors import NotUniqueError
+from sys import exit
+import argparse
 
-conn = connect('AGMAPI')
+parser = argparse.ArgumentParser(
+    description='Process commodities data and feed into MongoDB.')
+parser.add_argument('--uri',
+                    default='mongodb://localhost:27017',
+                    help='Please provide a Mongo '
+                    'connection URI for auth based DBs')
+
+args = parser.parse_args()
+host = args.uri
+print("Connecting to Mongo via %s" % host)
+conn = connect('AGMAPI', host=host)
 
 
 class Commidities(Document):
@@ -40,3 +52,4 @@ for val in data:
                     print("commodity %s already feeded" % comm)
     except Exception as err:
         raise
+print("Finished!")
