@@ -3,6 +3,7 @@ from mongoengine import (
     Document,
     StringField,
     IntField,
+    ListField,
     DateTimeField,
     FloatField,
     ReferenceField
@@ -16,11 +17,11 @@ conn = connect('AGMAPI')
 
 
 class Commidities(Document):
-    type = StringField()
+    types = ListField()
     name = StringField(unique=True)
 
     meta = {
-        'indexes': ['name', 'type']
+        'indexes': ['name', 'types']
     }
 
 
@@ -59,7 +60,7 @@ for day in [1, 2, 3, 6, 7]:
                     crop_state = det.get('market center')
             else:
                 try:
-                    commodity = Commidities(name=crop_name, type='Cereals')
+                    commodity = Commidities(name=crop_name, types=['Cereals'])
                     commodity.save()
                 except NotUniqueError:
                     commodity = Commidities.objects.get(name=crop_name)

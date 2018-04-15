@@ -31,5 +31,5 @@ from .web import (
 )
 api = Api(app)
 
-api.add_resource(StocksResource, '/api/crops')
+api.add_resource(StocksResource, '/api/stocks')
 api.add_resource(CommodityResource, '/api/commodities')

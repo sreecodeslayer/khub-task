@@ -28,7 +28,7 @@ class CommodityResource(Resource):
         elif typ:
             comms = Commidities.objects(typ=typ)
             comms = schema.dump(comms, many=True)
-            return jsonify(commidities=comms)
+            return jsonify(commidities=comms.data)
         else:
             comms = Commidities.objects()
             comms = schema.dump(comms, many=True)

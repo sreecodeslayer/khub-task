@@ -5,8 +5,14 @@ from flask import (
     make_response
 )
 
-from agmapi.db.models import Stocks
+from agmapi.db.models import (
+    Stocks,
+    Commidities
+)
+from agmapi.db.schemas import StocksSchema
 from datetime import datetime
+
+schema = StocksSchema()
 
 
 class StocksResource(Resource):
@@ -18,7 +24,7 @@ class StocksResource(Resource):
         date = params.get('date')
         frm = params.get('from')
         to = params.get('to')
-        crop_name = params.get('crop')
+        comm = params.get('commodity')
         mandi_name = params.get('mandi')
         page = int(params.get('page', 1))
         per_page = int(params.get('perPage', 10))
@@ -27,21 +33,33 @@ class StocksResource(Resource):
         try:
             if date:
                 date = datetime.strptime(date, '%d/%m/%Y')
-                if crop_name:
+                if comm:
+                    try:
+                        comm = Commidities.objects.get(name=comm)
+                    except DoesNotExist:
+                        return make_response(
+                            jsonify(msg="No commodity in that name"), 404
+                        )
                     stocks = Stocks.objects(
-                        date=date, name=crop_name
+                        date=date, commodity=comm
                     ).paginate(
                         page=page, per_page=per_page
                     )
                 elif mandi_name:
                     stocks = Stocks.objects(
-                        date=date, name=crop_name, mandi=mandi_name
+                        date=date, mandi=mandi_name
                     ).paginate(
                         page=page, per_page=per_page
                     )
-                elif crop_name and mandi_name:
+                elif comm and mandi_name:
+                    try:
+                        comm = Commidities.objects.get(name=comm)
+                    except DoesNotExist:
+                        return make_response(
+                            jsonify(msg="No commodity in that name"), 404
+                        )
                     stocks = Stocks.objects(
-                        date=date, mandi=mandi_name
+                        date=date, commodity=comm, mandi=mandi_name
                     ).paginate(
                         page=page, per_page=per_page
                     )
@@ -51,6 +69,19 @@ class StocksResource(Resource):
                     ).paginate(
                         page=page, per_page=per_page
                     )
+
+                total = stocks.total
+                page = stocks.page
+                per_page = stocks.per_page
+                total_pages = total/per_page
+                stocks = schema.dump(stocks.items, many=True)
+                return jsonify(
+                    stocks=stocks.data,
+                    page=page,
+                    per_page=per_page,
+                    total=total,
+                    total_pages=int(total_pages)
+                )
 
             elif frm:
                 frm = datetime.strptime(frm, '%d/%m/%Y')
@@ -63,9 +94,21 @@ class StocksResource(Resource):
                     page=page, per_page=per_page
                 )
 
-            stocks = Stocks.objects(name=crop_name, mandi=mandi_name
-                                    ).paginate(
+            stocks = Stocks.objects().paginate(
                 page=page, per_page=per_page
+            )
+
+            total = stocks.total
+            page = stocks.page
+            per_page = stocks.per_page
+            total_pages = total/per_page
+            stocks = schema.dump(stocks.items, many=True)
+            return jsonify(
+                stocks=stocks.data,
+                page=page,
+                per_page=per_page,
+                total=total,
+                total_pages=int(total_pages)
             )
         except Exception as e:
             raise e
