@@ -9,7 +9,10 @@ from mongoengine import (
     ReferenceField
 )
 
-from mongoengine.errors import NotUniqueError
+from mongoengine.errors import (
+    NotUniqueError,
+    DoesNotExist
+)
 from datetime import date
 import json
 
@@ -25,10 +28,23 @@ class Commidities(Document):
     }
 
 
+class States(Document):
+    name = StringField(unique=True)
+
+
+class Mandis(Document):
+    name = StringField()
+    state = ReferenceField(States)
+
+    meta = {
+        'indexes': ['name', 'state']
+    }
+
+
 class Stocks(Document):
     commodity = ReferenceField(Commidities)
-    state = StringField()
-    mandi = StringField()
+    state = ReferenceField(States)
+    mandi = ReferenceField(Mandis)
     date = DateTimeField()
     modal_price = StringField()
     min_price = StringField()
@@ -36,7 +52,7 @@ class Stocks(Document):
     arrivals = StringField()
 
     meta = {
-        'indexes': ['state', 'date', 'modal_price', 'min_price', 'max_price']
+        'indexes': ['date', 'modal_price', 'min_price', 'max_price']
     }
 
 
@@ -58,6 +74,11 @@ for day in [1, 2, 3, 6, 7]:
                     crop_state = data[i+1].get('market center')
                 else:
                     crop_state = det.get('market center')
+                    try:
+                        state = States(name=crop_state)
+                        state.save()
+                    except NotUniqueError:
+                        state = States.objects.get(name=crop_state)
             else:
                 try:
                     commodity = Commidities(name=crop_name, types=['Cereals'])
@@ -66,8 +87,23 @@ for day in [1, 2, 3, 6, 7]:
                     commodity = Commidities.objects.get(name=crop_name)
 
                 crop_doc = Stocks(
-                    commodity=commodity, state=crop_state)
-                crop_doc.mandi = det.get('market center')
+                    commodity=commodity, state=state)
+
+                crop_mandi = det.get('market center')
+
+                try:
+                    '''
+                    Query with state incl to avoid empty mandi being unique
+                    across states
+                    '''
+                    mandi = Mandis.objects.get(name=crop_mandi, state=state)
+                    crop_doc.mandi = mandi
+
+                except DoesNotExist:
+                    mandi = Mandis(name=crop_mandi, state=state)
+                    mandi.save()
+                    crop_doc.mandi = mandi
+
                 crop_doc.arrivals = det.get('arrivals', 'NR')
                 crop_doc.min_price = det.get('minimum price')
                 crop_doc.max_price = det.get('maximum price')
