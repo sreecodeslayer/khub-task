@@ -69,5 +69,3 @@ class StocksResource(Resource):
             )
         except Exception as e:
             raise e
-
-        pass

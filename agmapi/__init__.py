@@ -26,10 +26,10 @@ def index():
 
 
 from .web import (
-    CropsResource,
+    StocksResource,
     CommodityResource
 )
 api = Api(app)
 
-api.add_resource(CropsResource, '/api/crops')
+api.add_resource(StocksResource, '/api/crops')
 api.add_resource(CommodityResource, '/api/commodities')

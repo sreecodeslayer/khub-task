@@ -1,2 +1,2 @@
-from .crops import CropsResource
-from .crops import CommodityResource
+from .stocks import StocksResource
+from .commidities import CommodityResource
