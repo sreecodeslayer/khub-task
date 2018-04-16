@@ -40,7 +40,18 @@
             <v-card>
               <v-card-text>
                 <!-- Filter bar -->
+                <v-data-table :headers="commoditiesHeader" :rows-per-page-items="[5,10,20]" :pagination.sync="stocksPagination" :loading="stocksLoading" :items="stocks.data" :total-items="stocks.totalItems">
+                  <v-progress-linear slot="progress" color="success" indeterminate></v-progress-linear>
+                  <template slot="items" slot-scope="props">
+                    <td>{{ props.item.mandi.name }}</td>
+                    <td>{{ props.item.state.name }}</td>
+                    <td>{{ props.item.arrivals }}</td>
+                    <td>{{ props.item.min_price }}</td>
+                    <td>{{ props.item.max_price }}</td>
+                    <td>{{ props.item.modal_price }}</td>
+                  </template>
 
+                </v-data-table>
               </v-card-text>
             </v-card>
           </v-flex>
@@ -55,7 +66,22 @@ export default{
   data () {
     return {
       commodities: [],
+      commoditiesHeader: [
+        {text: 'Market Center', value: 'mandi', sortable: false},
+        {text: 'State', value: 'state', sortable: false},
+        {text: 'Arrivals', value: 'arrivals', sortable: false},
+        {text: 'Minimum Price', value: 'min_price', sortable: false},
+        {text: 'Maximum Price', value: 'max_price', sortable: false},
+        {text: 'Modal Price', value: 'modal_price', sortable: false}
+      ],
       mandis: [],
+      stocksPagination: {},
+      stocks: {
+        data: [],
+        totalPages: 1,
+        page: 1,
+        totalItems: 0
+      },
       search: {
         commodity: '',
         mandi: '',
@@ -65,17 +91,31 @@ export default{
       },
       date: null,
       dialogDate: false,
-      modalDate: false
+      modalDate: false,
+      stocksLoading: false
+    }
+  },
+  watch: {
+    stocksPagination: {
+      handler () {
+        this.fetchReports()
+      },
+      deep: true
     }
   },
   methods: {
     fetchReports: function () {
-      var url = '/stocks?commodity=' + this.search.commodity + '&mandi=' + this.search.mandi + '&date=' + this.search.date + '&from=' + this.search.from + '&to=' + this.search.to
-      console.log(this.search, url)
-
+      var page = this.stocksPagination.page
+      var perPage = this.stocksPagination.rowsPerPage
+      var url = '/stocks?commodity=' + this.search.commodity + '&mandi=' + this.search.mandi + '&date=' + this.search.date + '&from=' + this.search.from + '&to=' + this.search.to + '&page=' + page + '&perPage=' + perPage
+      this.stocksLoading = true
       this.$http.get(url).then(
         (response) => {
-          console.log(response.data)
+          this.stocks.totalPages = parseInt(response.data.total_pages)
+          this.stocks.totalItems = parseInt(response.data.total)
+          this.stocks.page = parseInt(response.data.page)
+          this.stocks.data = response.data.stocks
+          this.stocksLoading = false
         },
         (err) => {}
       )
