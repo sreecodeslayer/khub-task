@@ -24,12 +24,12 @@ class CommodityResource(Resource):
         if name:
             comm = Commidities.objects.get(name=name)
             comm = schema.dump(comm)
-            return jsonify(commidity=comm)
+            return jsonify(commodity=comm)
         elif typ:
             comms = Commidities.objects(typ=typ)
             comms = schema.dump(comms, many=True)
-            return jsonify(commidities=comms.data)
+            return jsonify(commodities=comms.data)
         else:
             comms = Commidities.objects()
             comms = schema.dump(comms, many=True)
-            return jsonify(commidities=comms)
+            return jsonify(commodities=comms.data)

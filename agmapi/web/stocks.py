@@ -28,6 +28,7 @@ class StocksResource(Resource):
     def get(self):
         # Accept and parse params
         params = request.args
+        logger.debug(params)
 
         date = params.get('date')
         frm = params.get('from')
@@ -111,11 +112,11 @@ class StocksResource(Resource):
         # Date have precedence over range
         if date:
             logger.debug("Filtering by specific date")
-            date = datetime.strptime(date, '%d/%m/%Y')
+            date = datetime.strptime(date, '%Y-%m-%d')
             stocks = stocks.filter(date=date)
         elif frm:
             logger.debug("Filtering by date range")
-            frm = datetime.strptime(frm, '%d/%m/%Y')
+            frm = datetime.strptime(frm, '%Y-%m-%d')
 
             to = datetime.strptime(
                 to, '%d/%m/%Y') if to else datetime.utcnow()
