@@ -22,9 +22,11 @@
     "eslint-plugin-standard": "^3.0.1",
     "vue": "^2.5.2",
     "vue-axios": "^2.1.1",
+    "vue-moment": "^3.2.0",
     "vue-router": "^3.0.1",
     "vuetify": "^1.0.0",
-    "vuetify-daterange-picker": "^2.2.0"
+    "vuetify-daterange-picker": "^2.2.0",
+    "vuetrend": "^0.3.2"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

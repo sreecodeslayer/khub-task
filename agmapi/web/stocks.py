@@ -37,8 +37,8 @@ class StocksResource(Resource):
         mandi_id = params.get('mandi', '').strip()
         state_id = params.get('state', '').strip()
         page = int(params.get('page', 1))
-        per_page = int(params.get('perPage', 10))
-        per_page = 20 if per_page > 20 else per_page
+        per_page = int(params.get('perPage', 50))
+        per_page = 200 if per_page > 200 else per_page
 
         stocks = Stocks.objects()
 
