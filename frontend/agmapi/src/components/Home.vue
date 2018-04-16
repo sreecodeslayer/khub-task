@@ -14,7 +14,7 @@
                   </v-flex>
                   <!-- Mandi name selector -->
                   <v-flex xs3>
-                    <v-select :items="mandis" item-text="name" item-value="id" v-model="search.mandi" label="Select mandi" autocomplete @input="fetchReports()"></v-select>
+                    <v-select :items="mandis" item-text="name" v-model="search.mandi" label="Select mandi" autocomplete @input="fetchReports()"></v-select>
                   </v-flex>
                   <!-- Date name selector -->
                   <v-flex xs3 v-if="!toggleDateFilter">
@@ -52,31 +52,35 @@
         </v-layout>
         <!-- Insights -->
         <v-layout row wrap>
-          <v-flex xs3 v-if="search.commodity">
-            <v-card>
+          <v-flex xs6 v-if="search.commodity && stocks.data.length">
+            <v-card color="teal lighten-3">
               <v-card-title>
-                <div class="subheading">{{search.commodity}}</div>
+                <div class="title white--text">{{search.commodity}}</div>
               </v-card-title>
               <v-card-text>
                 <v-layout row wrap>
                   <v-flex xs12>
-                    <div class="body-2">Low: <span class="red--text">{{insights.commodity.low.modal_price}}</span></div>
-                    <div class="body-2">High: <span class="red--text">{{insights.commodity.high.modal_price}}</span></div>
+                    <div class="caption">The lowest occured in : <span class="red--text">{{insights.commodity.low.mandi.name}}</span></div>
+                    <div class="body-2">Cost: <span class="red--text">{{insights.commodity.low.modal_price}}</span></div>
+                    <div class="caption">The highest occured in : <span class="red--text">{{insights.commodity.high.mandi.name}}</span></div>
+                    <div class="body-2">Cost: <span class="red--text">{{insights.commodity.high.modal_price}}</span></div>
                   </v-flex>
                 </v-layout>
               </v-card-text>
             </v-card>
           </v-flex>
-          <v-flex xs3 v-if="search.mandi">
-            <v-card>
+          <v-flex xs6 v-if="search.mandi.id && stocks.data.length" v-cloak>
+            <v-card color="teal lighten-3">
               <v-card-title>
-                <div class="subheading">{{search.mandi}}</div>
+                <div class="title white--text">{{search.mandi.name}}</div>
               </v-card-title>
               <v-card-text>
                 <v-layout row wrap>
                   <v-flex xs12>
-                    <div class="body-2">Low: <span class="red--text">{{insights.mandi.low.modal_price}}</span></div>
-                    <div class="body-2">High: <span class="red--text">{{insights.mandi.high.modal_price}}</span></div>
+                    <div class="caption">The lowest priced crop is : <span class="red--text">{{insights.mandi.low.commodity.name}}</span></div>
+                    <div class="body-2">Cost: <span class="red--text">{{insights.mandi.low.modal_price}}</span></div>
+                    <div class="caption">The highest priced crop is : <span class="red--text">{{insights.mandi.high.commodity.name}}</span></div>
+                    <div class="body-2">Cost: <span class="red--text">{{insights.mandi.high.modal_price}}</span></div>
                   </v-flex>
                 </v-layout>
               </v-card-text>
@@ -166,7 +170,7 @@ export default{
       insights: null,
       search: {
         commodity: '',
-        mandi: '',
+        mandi: {name: '', id: ''},
         date: '',
         from: '',
         to: ''
@@ -213,9 +217,10 @@ export default{
       this.search.to = range[1]
     },
     fetchReports: function () {
+      console.log(this.search)
       var page = this.stocksPagination.page
       var perPage = this.stocksPagination.rowsPerPage
-      var url = '/stocks?commodity=' + this.search.commodity + '&mandi=' + this.search.mandi + '&date=' + this.search.date + '&from=' + this.search.from + '&to=' + this.search.to + '&page=' + page + '&perPage=' + perPage
+      var url = '/stocks?commodity=' + this.search.commodity + '&mandi=' + this.search.mandi.id + '&date=' + this.search.date + '&from=' + this.search.from + '&to=' + this.search.to + '&page=' + page + '&perPage=' + perPage
       this.stocksLoading = true
       this.$http.get(url).then(
         (response) => {
