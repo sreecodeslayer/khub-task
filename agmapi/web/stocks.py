@@ -41,7 +41,7 @@ class StocksResource(Resource):
         per_page = 200 if per_page > 200 else per_page
 
         stocks = Stocks.objects()
-
+        mandi = commodity = {}
         # Filter by state if asked
         if state_id:
             logger.debug("Filtering by states")
@@ -77,9 +77,29 @@ class StocksResource(Resource):
                     jsonify(msg="No mandi in that id"), 404
                 )
 
+            mandi_ = stocks.filter(mandi=mandi)
+            mandi_high = mandi_.order_by('-modal_price').limit(-1).first()
+            mandi_low = mandi_.order_by('modal_price').limit(-1).first()
+
+            comm_ = stocks.filter(commodity=comm)
+            comm_high = comm_.order_by('-modal_price').limit(-1).first()
+            comm_low = comm_.order_by('modal_price').limit(-1).first()
+            
             stocks = stocks.filter(
                 commodity=comm, mandi=mandi
             )
+
+
+            mandi = {
+                'high': schema.dump(mandi_high).data,
+                'low': schema.dump(mandi_low).data
+            }
+
+            commodity = {
+                'high': schema.dump(comm_high).data,
+                'low': schema.dump(comm_low).data
+            }
+
         elif comm:
             logger.debug("Filtering by commodity")
             try:
@@ -89,6 +109,15 @@ class StocksResource(Resource):
                     jsonify(msg="No commodity in that name"), 404
                 )
 
+            comm_ = stocks.filter(commodity=comm)
+            comm_high = comm_.order_by('-modal_price').limit(-1).first()
+            comm_low = comm_.order_by('modal_price').limit(-1).first()
+            
+            commodity = {
+                'high': schema.dump(comm_high).data,
+                'low': schema.dump(comm_low).data
+            }
+            
             stocks = stocks.filter(
                 commodity=comm
             )
@@ -104,6 +133,15 @@ class StocksResource(Resource):
                 return make_response(
                     jsonify(msg="No mandi in that id"), 404
                 )
+            mandi_ = stocks.filter(mandi=mandi)
+            mandi_high = mandi_.order_by('-modal_price').limit(-1).first()
+            mandi_low = mandi_.order_by('modal_price').limit(-1).first()
+
+            mandi = {
+                'high': schema.dump(mandi_high).data,
+                'low': schema.dump(mandi_low).data
+            }
+
             stocks = stocks.filter(
                 mandi=mandi
             )
@@ -145,6 +183,7 @@ class StocksResource(Resource):
 
         stocks = schema.dump(stocks, many=True)
         return jsonify(
+            insights = {'mandi':mandi, 'commodity':commodity},
             stocks=stocks.data,
             page=page,
             per_page=per_page,

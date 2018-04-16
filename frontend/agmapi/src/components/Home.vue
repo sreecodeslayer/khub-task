@@ -50,7 +50,40 @@
             </v-card>
           </v-flex>
         </v-layout>
-        <!-- <br> -->
+        <!-- Insights -->
+        <v-layout row wrap>
+          <v-flex xs3 v-if="search.commodity">
+            <v-card>
+              <v-card-title>
+                <div class="subheading">{{search.commodity}}</div>
+              </v-card-title>
+              <v-card-text>
+                <v-layout row wrap>
+                  <v-flex xs12>
+                    <div class="body-2">Low: <span class="red--text">{{insights.commodity.low.modal_price}}</span></div>
+                    <div class="body-2">High: <span class="red--text">{{insights.commodity.high.modal_price}}</span></div>
+                  </v-flex>
+                </v-layout>
+              </v-card-text>
+            </v-card>
+          </v-flex>
+          <v-flex xs3 v-if="search.mandi">
+            <v-card>
+              <v-card-title>
+                <div class="subheading">{{search.mandi}}</div>
+              </v-card-title>
+              <v-card-text>
+                <v-layout row wrap>
+                  <v-flex xs12>
+                    <div class="body-2">Low: <span class="red--text">{{insights.mandi.low.modal_price}}</span></div>
+                    <div class="body-2">High: <span class="red--text">{{insights.mandi.high.modal_price}}</span></div>
+                  </v-flex>
+                </v-layout>
+              </v-card-text>
+            </v-card>
+          </v-flex>
+        </v-layout>
+        <!-- Data table and graphs -->
         <v-layout row wrap>
           <v-flex xs12 sm12 md6 lg8>
             <v-card>
@@ -58,7 +91,7 @@
                 <!-- Filter bar -->
                 <v-data-table :headers="commoditiesHeader" :rows-per-page-items="[50,5,10,20,70,200]" :pagination.sync="stocksPagination" :loading="stocksLoading" :items="stocks.data" :total-items="stocks.totalItems">
                   <v-progress-linear slot="progress" color="success" indeterminate></v-progress-linear>
-                  <template slot="items" slot-scope="props">
+                  <template slot="items" slot-scope="props" style="overflow-y: scroll;max-height: 100vh;">
                     <td>{{ props.item.commodity.name }}</td>
                     <td>{{ props.item.mandi.name }}</td>
                     <td>{{ props.item.state.name }}</td>
@@ -130,6 +163,7 @@ export default{
         page: 1,
         totalItems: 0
       },
+      insights: null,
       search: {
         commodity: '',
         mandi: '',
@@ -163,15 +197,15 @@ export default{
     onChartTypeChange: function () {
       if (this.chart.type === 'min') {
         this.chart.data = this.stocks.data.map(function (a) { return parseInt(a.min_price) })
-        this.chart.gradient = ['#B71C1C']//, '#FFCDD2', '#F44336', '#B71C1C']
+        this.chart.gradient = ['#B71C1C']
       }
       if (this.chart.type === 'max') {
         this.chart.data = this.stocks.data.map(function (a) { return parseInt(a.max_price) })
-        this.chart.gradient = ['#1A237E']//, '#C5CAE9', '#3F51B5', '#1A237E']
+        this.chart.gradient = ['#1A237E']
       }
       if (this.chart.type === 'modal') {
         this.chart.data = this.stocks.data.map(function (a) { return parseInt(a.modal_price) })
-        this.chart.gradient = ['#1B5E20']//, '#C8E6C9', '#66BB6A', '#1B5E20']
+        this.chart.gradient = ['#1B5E20']
       }
     },
     onDateRangeChange: function (range) {
@@ -189,6 +223,8 @@ export default{
           this.stocks.totalItems = parseInt(response.data.total)
           this.stocks.page = parseInt(response.data.page)
           this.stocks.data = response.data.stocks
+          this.insights = response.data.insights
+          console.log(this.insights, this.insights.length)
           this.stocksLoading = false
           this.onChartTypeChange()
         },
