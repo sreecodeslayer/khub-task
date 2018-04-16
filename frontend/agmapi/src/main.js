@@ -7,12 +7,16 @@ import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
+import VDateRange from 'vuetify-daterange-picker'
+import 'vuetify-daterange-picker/dist/vuetify-daterange-picker.css'
 
 axios.defaults.headers.post['Content-Type'] = 'application/json'
 axios.defaults.baseURL = process.env.BASE_URL
 
 Vue.use(VueAxios, axios)
 Vue.use(Vuetify)
+
+Vue.use(VDateRange)
 
 Vue.config.productionTip = false
 

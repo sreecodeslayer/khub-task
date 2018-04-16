@@ -119,7 +119,7 @@ class StocksResource(Resource):
             frm = datetime.strptime(frm, '%Y-%m-%d')
 
             to = datetime.strptime(
-                to, '%d/%m/%Y') if to else datetime.utcnow()
+                to, '%Y-%m-%d') if to else datetime.utcnow()
             stocks = stocks.filter(
                 date__gte=frm,
                 date__lte=to

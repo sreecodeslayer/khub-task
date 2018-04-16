@@ -9,25 +9,45 @@
                 <v-layout row wrap gird-list-xs>
                   <!-- Filter bar -->
                   <!-- Crop name selector -->
-                  <v-flex xs4>
+                  <v-flex xs3>
                     <v-select :items="commodities" item-text="name" item-value="name" v-model="search.commodity" label="Select commodity" autocomplete @input="fetchReports()"></v-select>
                   </v-flex>
                   <!-- Mandi name selector -->
-                  <v-flex xs4>
+                  <v-flex xs3>
                     <v-select :items="mandis" item-text="name" item-value="id" v-model="search.mandi" label="Select mandi" autocomplete @input="fetchReports()"></v-select>
                   </v-flex>
+                  <!-- <v-flex xs3>
+                    <v-checkbox label="Date Range" v-model="toggleDateFilter" color="indigo"></v-checkbox>
+                  </v-flex> -->
                   <!-- Date name selector -->
-                  <v-flex xs4>
-                    <v-dialog ref="dialogDate" persistent v-model="modalDate" lazy full-width width="460px" :return-value.sync="search.date">
+                  <v-flex xs3 v-if="!toggleDateFilter">
+                    <v-dialog ref="dialogDate" persistent v-model="modalDate" lazy full-width width="475px" :return-value.sync="search.date">
                       <v-text-field slot="activator" label="Select date for report" v-model="search.date" prepend-icon="event" readonly ></v-text-field>
                       <v-date-picker color="indigo darken-2" :show-current="true" :landscape="$vuetify.breakpoint.xs?false:true" v-model="search.date" scrollable>
                         <v-spacer></v-spacer>
-                        <v-btn flat color="warning" @click="dialogDate = false">Cancel</v-btn>
-                        <v-btn flat color="success" @click="$refs.dialogDate.save(search.date);fetchReports()">OK</v-btn>
+                        <v-btn flat color="info" @click="modalDate = false; modalRange = true; toggleDateFilter = !toggleDateFilter">Range</v-btn>
+                        <v-btn flat color="warning" @click="search.from='';search.to='';search.date='';modalDate = false">Cancel</v-btn>
+                        <v-btn flat color="success" @click="search.from='';search.to='';$refs.dialogDate.save(search.date);fetchReports()">OK</v-btn>
                       </v-date-picker>
                     </v-dialog>
-                  </v-flex>
+                  </v-flex xs3>
+                  <v-flex xs3 v-if="toggleDateFilter">
+                    <v-dialog ref="dialogDateRange" persistent v-model="modalRange" lazy full-width width="800px">
+                      <v-text-field slot="activator" label="Select date range report" v-model="search.date" prepend-icon="event" readonly ></v-text-field>
+                      <v-card>
+                        <v-card-text>
+                          <v-daterange :options="dateRangeOptions" @input="onDateRangeChange"></v-daterange>
+                        </v-card-text>
+                        <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn flat color="info" @click="modalDate = true; modalRange = false; toggleDateFilter = !toggleDateFilter">Date</v-btn>
+                      <v-btn flat color="warning" @click="search.date='';search.from='';search.to='';modalRange = false">Cancel</v-btn>
+                      <v-btn flat color="success" @click="search.date='';fetchReports(); modalRange = false">OK</v-btn>
+                    </v-card-actions>
+                    </v-card>
                   <!-- Range - From name selector -->
+                    </v-dialog>
+                  </v-flex>
                   <!-- Range - To name selector -->
                 </v-layout>
               </v-card-text>
@@ -35,8 +55,8 @@
           </v-flex>
         </v-layout>
         <br>
-        <v-layout row wrap gird-list-sm>
-          <v-flex :class='$vuetify.breakpoint.xs ? "xs12" : "md6 lg8"'>
+        <v-layout row wrap>
+          <v-flex xs12 sm12 md6 lg8>
             <v-card>
               <v-card-text>
                 <!-- Filter bar -->
@@ -50,7 +70,6 @@
                     <td>{{ props.item.max_price }}</td>
                     <td>{{ props.item.modal_price }}</td>
                   </template>
-
                 </v-data-table>
               </v-card-text>
             </v-card>
@@ -61,6 +80,8 @@
   </v-container>
 </template>
 <script>
+import { format, subDays } from 'date-fns'
+
 export default{
   name: 'Home',
   data () {
@@ -90,9 +111,17 @@ export default{
         to: ''
       },
       date: null,
+      toggleDateFilter: false,
       dialogDate: false,
       modalDate: false,
-      stocksLoading: false
+      modalRange: false,
+      stocksLoading: false,
+      dateRangeOptions: {
+        startDate: format(subDays(new Date(), 7), 'YYYY-MM-DD'),
+        endDate: format(new Date(), 'YYYY-MM-DD'),
+        format: 'YYYY/MM/DD'
+      },
+      dateRange: null
     }
   },
   watch: {
@@ -104,6 +133,11 @@ export default{
     }
   },
   methods: {
+
+    onDateRangeChange: function (range) {
+      this.search.from = range[0]
+      this.search.to = range[1]
+    },
     fetchReports: function () {
       var page = this.stocksPagination.page
       var perPage = this.stocksPagination.rowsPerPage
