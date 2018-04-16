@@ -53,7 +53,7 @@
         <!-- Insights -->
         <v-layout row wrap>
           <v-flex xs6 v-if="search.commodity && stocks.data.length">
-            <v-card color="teal lighten-3">
+            <v-card color="teal darken-4" dark>
               <v-card-title>
                 <div class="title white--text">{{search.commodity}}</div>
               </v-card-title>
@@ -70,7 +70,7 @@
             </v-card>
           </v-flex>
           <v-flex xs6 v-if="search.mandi.id && stocks.data.length" v-cloak>
-            <v-card color="teal lighten-3">
+            <v-card color="teal darken-4" dark>
               <v-card-title>
                 <div class="title white--text">{{search.mandi.name}}</div>
               </v-card-title>
