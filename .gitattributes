@@ -1,4 +1,10 @@
-htmls/* linguist-vendored
-json/* linguist-vendored
-frontend/agmapi/build/* linguist-vendored
-frontend/agmapi/config/* linguist-vendored
+htmls/* linguist-vendored=true
+json/* linguist-vendored=true
+frontend/agmapi/build/* linguist-vendored=true
+frontend/agmapi/config/* linguist-vendored=true
+
+# ignore all JS files as this is a VUE frontend
+*.js linguist-vendored=true
+
+#ignore all HTMLS as templates are inside .VUE files
+*.html linguist-vendored=true
