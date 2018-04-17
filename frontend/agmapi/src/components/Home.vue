@@ -52,7 +52,7 @@
         </v-layout>
         <!-- Insights -->
         <v-layout row wrap>
-          <v-flex xs6 v-if="search.commodity && stocks.data.length">
+          <v-flex xs6 v-if="search.commodity && insights.commodity.low" v-cloak>
             <v-card color="teal darken-4" dark>
               <v-card-title>
                 <div class="title white--text">{{search.commodity}}</div>
@@ -69,7 +69,7 @@
               </v-card-text>
             </v-card>
           </v-flex>
-          <v-flex xs6 v-if="search.mandi.id && stocks.data.length" v-cloak>
+          <v-flex xs6 v-if="search.mandi.id && insights.mandi.low" v-cloak>
             <v-card color="teal darken-4" dark>
               <v-card-title>
                 <div class="title white--text">{{search.mandi.name}}</div>
@@ -161,6 +161,7 @@ export default{
         data: []
       },
       stocksPagination: {},
+      responseData: {},
       stocks: {
         data: [],
         totalPages: 1,
@@ -217,19 +218,19 @@ export default{
       this.search.to = range[1]
     },
     fetchReports: function () {
-      console.log(this.search)
       var page = this.stocksPagination.page
       var perPage = this.stocksPagination.rowsPerPage
       var url = '/stocks?commodity=' + this.search.commodity + '&mandi=' + this.search.mandi.id + '&date=' + this.search.date + '&from=' + this.search.from + '&to=' + this.search.to + '&page=' + page + '&perPage=' + perPage
       this.stocksLoading = true
       this.$http.get(url).then(
         (response) => {
-          this.stocks.totalPages = parseInt(response.data.total_pages)
-          this.stocks.totalItems = parseInt(response.data.total)
-          this.stocks.page = parseInt(response.data.page)
-          this.stocks.data = response.data.stocks
-          this.insights = response.data.insights
-          console.log(this.insights, this.insights.length)
+          this.responseData = response.data
+
+          this.stocks.totalPages = parseInt(this.responseData.total_pages)
+          this.stocks.totalItems = parseInt(this.responseData.total)
+          this.stocks.page = parseInt(this.responseData.page)
+          this.stocks.data = this.responseData.stocks
+          this.insights = this.responseData.insights
           this.stocksLoading = false
           this.onChartTypeChange()
         },
