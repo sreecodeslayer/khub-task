@@ -1,0 +1,4 @@
+htmls/ linguist-vendored
+json/*.json linguist-vendored
+frontend/agmapi/build linguist-vendored
+frontend/agmapi/config linguist-vendored
